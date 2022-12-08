@@ -50,13 +50,7 @@ class DogBreeder:
         return np.argmax(ResNet50_model.predict(img))
     
     def paths_to_tensor(self, img_paths):
-        def path_to_tensor_safe(img_path):
-            try:
-                return self.path_to_tensor(img_path)
-            except:
-                print('error parsing image {}'.format(img_path))
-                return None
-        return [tensor for img_path in tqdm(img_paths) for tensor in [path_to_tensor_safe(img_path)] if tensor is not None]
+        return [self.path_to_tensor(img_path) for img_path in tqdm(img_paths)]
 
     def human_face_detector(self, img_path):
         img = cv2.imread(img_path)
@@ -75,9 +69,17 @@ class DogBreeder:
         valid_tensors = self.paths_to_tensor(valid_files)
         test_tensors = self.paths_to_tensor(test_files)
         
-        train_resnet = np.vstack([self.extract_Resnet50(feature) for feature in train_tensors])
-        valid_resnet = np.vstack([self.extract_Resnet50(feature) for feature in valid_tensors])
-        test_resnet = np.vstack([self.extract_Resnet50(feature) for feature in test_tensors])
+        train_resnet = np.vstack([self.extract_Resnet50(tensor) for tensor in train_tensors])
+        valid_resnet = np.vstack([self.extract_Resnet50(tensor) for tensor in valid_tensors])
+        test_resnet = np.vstack([self.extract_Resnet50(tensor) for tensor in test_tensors])
+
+        with open('resnet.npy', 'wb') as f:
+            np.save(f, train_resnet)
+            np.save(f, train_targets)
+            np.save(f, valid_resnet)
+            np.save(f, valid_targets)
+            np.save(f, test_resnet)
+            np.save(f, test_targets)
 
         resnet_model = Sequential()
         resnet_model.add(GlobalAveragePooling2D(input_shape=train_resnet.shape[1:]))
@@ -105,7 +107,7 @@ class DogBreeder:
         datagen_resnet_train.fit(train_resnet)
         datagen_resnet_valid.fit(valid_resnet)
 
-        epochs = 1
+        epochs = 100
         batch_size = 20
         resnet_model.fit_generator(datagen_resnet_train.flow(train_resnet, train_targets, batch_size=batch_size),
                             steps_per_epoch=train_resnet.shape[0] // batch_size,
