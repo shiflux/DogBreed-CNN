@@ -8,7 +8,9 @@ from keras.callbacks import ModelCheckpoint
 from keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.applications.resnet50 import ResNet50, preprocess_input
 from sklearn.datasets import load_files   
+from PIL import Image
 from tqdm import tqdm
+import io
 from .consts import *
 
 class DogBreeder:
@@ -18,9 +20,16 @@ class DogBreeder:
     def load_model_from_file(self):
         self.dog_model = load_model(MODEL_PATH)
         
-    def predict_dog(self, image_path):
-        img = self.path_to_tensor(image_path)
-        feature = self.extract_Resnet50(img)
+    def predict_dog_from_path(self, image_path):
+        tensor = self.path_to_tensor(image_path)
+        return self.predict_from_tensor(tensor)
+        
+    def predict_dog(self, img_bytes):
+        tensor = self.bytes_to_tensor(img_bytes)
+        return self.predict_from_tensor(tensor)
+    
+    def predict_from_tensor(self, tensor):
+        feature = self.extract_Resnet50(tensor)
         if not self.dog_model:
             self.load_model_from_file()
         return np.argmax(self.dog_model.predict(feature), axis=1)[0]
@@ -36,25 +45,45 @@ class DogBreeder:
         # convert 3D tensor to 4D tensor with shape (1, 224, 224, 3) and return 4D tensor
         return np.expand_dims(x, axis=0)
     
+    def bytes_to_tensor(self, img_bytes):
+        img = Image.open(io.BytesIO(img_bytes))
+        img = img.convert('RGB')
+        img = img.resize((224, 224), Image.NEAREST)
+        x = img_to_array(img)
+        return np.expand_dims(x, axis=0)
+    
     def extract_Resnet50(self, tensor):
         return ResNet50(weights='imagenet', include_top=False).predict(preprocess_input(tensor))
         
-    def dog_detector(self, img_path):
-        prediction = self.ResNet50_predict_labels(img_path)
+    def dog_detector_from_path(self, img_path):
+        tensor = preprocess_input(self.path_to_tensor(img_path))
+        return self.dog_detector_from_tensor(tensor)
+     
+    def dog_detector(self, img_bytes):
+        tensor = self.bytes_to_tensor(img_bytes)
+        return self.dog_detector_from_tensor(tensor)
+    
+    def dog_detector_from_tensor(self, tensor):
+        prediction = self.ResNet50_predict_labels(tensor)
         return ((prediction <= 268) & (prediction >= 151)) 
     
-    def ResNet50_predict_labels(self, img_path):
-        # returns prediction vector for image located at img_path
-        img = preprocess_input(self.path_to_tensor(img_path))
+    def ResNet50_predict_labels(self, tensor):
         ResNet50_model = ResNet50(weights='imagenet')
-        return np.argmax(ResNet50_model.predict(img))
+        return np.argmax(ResNet50_model.predict(tensor))
     
     def paths_to_tensor(self, img_paths):
         return [self.path_to_tensor(img_path) for img_path in tqdm(img_paths)]
 
-    def human_face_detector(self, img_path):
+    def human_face_detector_from_path(self, img_path):
         img = cv2.imread(img_path)
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        face_cascade = cv2.CascadeClassifier('cnn/haarcascades/haarcascade_frontalface_alt.xml')
+        faces = face_cascade.detectMultiScale(gray)
+        return len(faces) > 0
+
+    def human_face_detector(self, img_bytes):
+        decoded = cv2.imdecode(np.frombuffer(img_bytes, np.uint8), -1)
+        gray = cv2.cvtColor(decoded, cv2.COLOR_BGR2GRAY)
         face_cascade = cv2.CascadeClassifier('cnn/haarcascades/haarcascade_frontalface_alt.xml')
         faces = face_cascade.detectMultiScale(gray)
         return len(faces) > 0
@@ -139,26 +168,4 @@ class DogBreeder:
         dog_files = [filename for filename in np.array(data['filenames']) if filename.endswith('.jpg')]
         dog_targets = np_utils.to_categorical(np.array(data['target']), 133)
         return dog_files, dog_targets
-
-        
-        
-
-# def lambda_handler(event, context):
-#     is_dog = dog_detector(img_path)
-#     if is_dog:
-#         is_human = False
-#     else:
-#         is_human = face_detector(img_path)
-    
-#     if not (is_dog or is_human):
-#         print('Neither human nor dog detected!')
-    
-#     breed_num = predict_dog(img_path).split('.')[-1]
-#     breed_name = DOG_NAMES[breed_num]
-    
-#     return {
-#         'statusCode': 200,
-#         'body': json.dumps(breed_name)
-#     }
-
 

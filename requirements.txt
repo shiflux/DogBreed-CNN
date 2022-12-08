@@ -1,8 +1,11 @@
+fastapi
 keras
 numpy
 opencv-python
 Pillow
+python-multipart
 requests
 scikit-learn
 tensorflow
 tqdm
+uvicorn
