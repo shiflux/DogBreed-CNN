@@ -26,7 +26,7 @@ class DogBreeder:
         return np.argmax(self.dog_model.predict(feature), axis=1)[0]
     
     def get_dog_name(self, breed_num):
-        return DOG_NAMES.get(breed_num, '')
+        return DOG_NAMES[breed_num]
     
     def path_to_tensor(self, img_path):
         # loads RGB image as PIL.Image.Image type
@@ -61,25 +61,36 @@ class DogBreeder:
     
     def create_model(self):
         # load train, test, and validation datasets
-        train_files, train_targets = self.load_dataset('cnn/dogImages/train')
-        valid_files, valid_targets = self.load_dataset('cnn/dogImages/valid')
-        test_files, test_targets = self.load_dataset('cnn/dogImages/test')
-        
-        train_tensors = self.paths_to_tensor(train_files)
-        valid_tensors = self.paths_to_tensor(valid_files)
-        test_tensors = self.paths_to_tensor(test_files)
-        
-        train_resnet = np.vstack([self.extract_Resnet50(tensor) for tensor in train_tensors])
-        valid_resnet = np.vstack([self.extract_Resnet50(tensor) for tensor in valid_tensors])
-        test_resnet = np.vstack([self.extract_Resnet50(tensor) for tensor in test_tensors])
+        try:
+            with open('resnet.npy', 'rb') as f:
+                train_resnet = np.load(f)
+                train_targets = np.load(f)
+                valid_resnet = np.load(f)
+                valid_targets = np.load(f) 
+                test_resnet = np.load(f)
+                test_targets = np.load(f) 
+                
+        except:
+            print('resent.py file not found, generating features')
+            train_files, train_targets = self.load_dataset('cnn/dogImages/train')
+            valid_files, valid_targets = self.load_dataset('cnn/dogImages/valid')
+            test_files, test_targets = self.load_dataset('cnn/dogImages/test')
+            
+            train_tensors = self.paths_to_tensor(train_files)
+            valid_tensors = self.paths_to_tensor(valid_files)
+            test_tensors = self.paths_to_tensor(test_files)
+            
+            train_resnet = np.vstack([self.extract_Resnet50(tensor) for tensor in train_tensors])
+            valid_resnet = np.vstack([self.extract_Resnet50(tensor) for tensor in valid_tensors])
+            test_resnet = np.vstack([self.extract_Resnet50(tensor) for tensor in test_tensors])
 
-        with open('resnet.npy', 'wb') as f:
-            np.save(f, train_resnet)
-            np.save(f, train_targets)
-            np.save(f, valid_resnet)
-            np.save(f, valid_targets)
-            np.save(f, test_resnet)
-            np.save(f, test_targets)
+            with open('resnet.npy', 'wb') as f:
+                np.save(f, train_resnet)
+                np.save(f, train_targets)
+                np.save(f, valid_resnet)
+                np.save(f, valid_targets)
+                np.save(f, test_resnet)
+                np.save(f, test_targets)
 
         resnet_model = Sequential()
         resnet_model.add(GlobalAveragePooling2D(input_shape=train_resnet.shape[1:]))
