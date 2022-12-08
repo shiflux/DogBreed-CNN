@@ -94,6 +94,7 @@ class DogBreeder:
 
         resnet_model = Sequential()
         resnet_model.add(GlobalAveragePooling2D(input_shape=train_resnet.shape[1:]))
+        resnet_model.add(Dense(532, activation='relu'))
         resnet_model.add(Dropout(0.3))
         resnet_model.add(Dense(266, activation='relu'))
         resnet_model.add(Dropout(0.1))
@@ -118,7 +119,7 @@ class DogBreeder:
         datagen_resnet_train.fit(train_resnet)
         datagen_resnet_valid.fit(valid_resnet)
 
-        epochs = 100
+        epochs = 200
         batch_size = 20
         resnet_model.fit_generator(datagen_resnet_train.flow(train_resnet, train_targets, batch_size=batch_size),
                             steps_per_epoch=train_resnet.shape[0] // batch_size,
