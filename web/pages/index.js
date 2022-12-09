@@ -9,7 +9,7 @@ export default function Home() {
   const handleSubmission = (file) => {
     const formData = new FormData();
     formData.append('file', file);
-    axios.post(`${process.env.NEXT_PUBLIC_HOST}/api/predict_dog/`,
+    axios.post((process.env.NEXT_PUBLIC_HOST ? `${process.env.NEXT_PUBLIC_HOST}` : '') + '/api/predict_dog/',
     formData, {
       headers: {
         'Content-Type': 'binary'
