@@ -1,0 +1,21 @@
+[Unit]
+
+Description=Gunicorn Daemon for DogBreed
+
+After=network.target
+
+
+
+[Service]
+
+Group=www-data
+
+WorkingDirectory=/root/DogBreed-CNN
+
+ExecStart=gunicorn -c confs/gunicorn_conf.py app:app
+
+
+
+[Install]
+
+WantedBy=multi-user.target
