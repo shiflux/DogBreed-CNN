@@ -8,6 +8,10 @@ After=network.target
 
 [Service]
 
+Restart=always
+
+RestartSec=5s
+
 Group=www-data
 
 WorkingDirectory=/root/DogBreed-CNN
