@@ -1,5 +1,6 @@
 from fastapi import FastAPI, File
 from cnn.dog_breeder_model import DogBreeder
+from cnn.consts import DOG_NAMES
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
@@ -23,6 +24,9 @@ dogbreed.add_middleware(
 dog_breed_model = DogBreeder()
 
 
+@dogbreed.get("/api/dogs")
+async def dogs():
+    return DOG_NAMES
 
 @dogbreed.post("/api/predict_dog")
 async def predict_dog(file: bytes=File()):

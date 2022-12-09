@@ -1,7 +1,5 @@
-import Head from 'next/head'
 import { useState } from 'react';
 import axios from 'axios'
-
 
 export default function Home() {
   const [fileImage, setFileImage] = useState(null)
