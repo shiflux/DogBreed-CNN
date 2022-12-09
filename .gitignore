@@ -135,3 +135,4 @@ resnet.npy
 web/.next/
 web/node_modules
 web/build/Release
+gunicorn.sock
