@@ -12,7 +12,7 @@ Group=www-data
 
 WorkingDirectory=/root/DogBreed-CNN
 
-ExecStart=gunicorn -c confs/gunicorn_conf.py app:app
+ExecStart=/usr/bin/gunicorn -c confs/gunicorn_conf.py server:dogbreed
 
 
 
