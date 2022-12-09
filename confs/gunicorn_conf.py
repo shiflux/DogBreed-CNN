@@ -4,7 +4,7 @@ from multiprocessing import cpu_count
 
 # Socket Path
 
-bind = 'unix:/root/DogBreed-CNN/gunicorn.sock'
+bind = '127.0.0.1:8000'
 
 
 
