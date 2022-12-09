@@ -1,11 +1,24 @@
 from fastapi import FastAPI, File
 from cnn.dog_breeder_model import DogBreeder
-import json
+from fastapi.middleware.cors import CORSMiddleware
 
 dogbreed = FastAPI()
+origins = [
+    "http://localhost",
+    "http://localhost:3000",
+]
+
+dogbreed.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 dog_breed_model = DogBreeder()
 
-@dogbreed.post("/predict_dog")
+@dogbreed.post("/api/predict_dog")
 async def predict_dog(file: bytes=File()):
     try:
         is_dog = dog_breed_model.dog_detector(file)

@@ -130,3 +130,8 @@ dmypy.json
 
 cnn/dogImages/
 resnet.npy
+
+# next js
+web/.next/
+web/node_modules
+web/build/Release
