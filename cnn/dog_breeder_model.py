@@ -14,30 +14,82 @@ import io
 from .consts import *
 
 class DogBreeder:
+    '''
+    Used to create the model and predict images
+    '''
     def __init__(self):
         self.dog_model = None
     
     def load_model_from_file(self):
+        '''
+        Load model from default MODEL_PATH file
+        '''
         self.dog_model = load_model(MODEL_PATH)
         
-    def predict_dog_from_path(self, image_path):
+    def predict_dog_from_path(self, image_path: str):
+        '''
+        Predicts dog breed
+        
+        input:
+            image_path (str): path to image
+            
+        output:
+            breed number (numpy.int64)
+        '''
         tensor = self.path_to_tensor(image_path)
         return self.predict_from_tensor(tensor)
         
-    def predict_dog(self, img_bytes):
+    def predict_dog(self, img_bytes: bytes):
+        '''
+        Predicts dog breed
+        
+        input:
+            img_bytes (bytes): image in bytes format
+            
+        output:
+            breed number (numpy.int64)
+        '''
         tensor = self.bytes_to_tensor(img_bytes)
         return self.predict_from_tensor(tensor)
     
-    def predict_from_tensor(self, tensor):
+    def predict_from_tensor(self, tensor: np.array):
+        '''
+        Predicts dog breed
+        
+        input:
+            tensor (numpy.array): image in tensor with shape (1, 224, 224, 3)
+            
+        output:
+            breed number (numpy.int64)
+        '''
         feature = self.extract_Resnet50(tensor)
         if not self.dog_model:
             self.load_model_from_file()
         return np.argmax(self.dog_model.predict(feature), axis=1)[0]
     
-    def get_dog_name(self, breed_num):
+    def get_dog_name(self, breed_num: int):
+        '''
+        Returns breed name from breed num
+        
+        input:
+            breed_num (numpy.int64): breed nuber
+            
+        output:
+            breed_name (str)
+        '''
         return DOG_NAMES[breed_num]
     
-    def path_to_tensor(self, img_path):
+    def path_to_tensor(self, img_path: str):
+        '''
+        Convert image to 4D tensor with shape (1, 224, 224, 3)
+        
+        input:
+            img_path (str): path to image
+            
+        output:
+            tensor (numpy.array)
+        '''
+        
         # loads RGB image as PIL.Image.Image type
         img = load_img(img_path, target_size=(224, 224))
         # convert PIL.Image.Image type to 3D tensor with shape (224, 224, 3)
@@ -45,43 +97,125 @@ class DogBreeder:
         # convert 3D tensor to 4D tensor with shape (1, 224, 224, 3) and return 4D tensor
         return np.expand_dims(x, axis=0)
     
-    def bytes_to_tensor(self, img_bytes):
+    def bytes_to_tensor(self, img_bytes: bytes):
+        '''
+        Convert image to 4D tensor with shape (1, 224, 224, 3)
+        
+        input:
+            img_bytes (bytes): image in bytes format
+            
+        output:
+            tensor (numpy.array)
+        '''
         img = Image.open(io.BytesIO(img_bytes))
         img = img.convert('RGB')
         img = img.resize((224, 224), Image.NEAREST)
         x = img_to_array(img)
+        print(x)
         return np.expand_dims(x, axis=0)
     
-    def extract_Resnet50(self, tensor):
+    def extract_Resnet50(self, tensor: np.array):
+        '''
+        Uses ResNet50 model to predict features
+        
+        input:
+            tensor (numpy.array): 4D tensor with shape (1, 224, 224, 3)
+            
+        output:
+
+        '''
         return ResNet50(weights='imagenet', include_top=False).predict(preprocess_input(tensor))
         
-    def dog_detector_from_path(self, img_path):
+    def dog_detector_from_path(self, img_path: str):
+        '''
+        Predict dog breed number
+        
+        input:
+            img_path (str): path to image
+            
+        output:
+            breed_num (numpy.int64)
+        '''
         tensor = preprocess_input(self.path_to_tensor(img_path))
         return self.dog_detector_from_tensor(tensor)
      
-    def dog_detector(self, img_bytes):
+    def dog_detector(self, img_bytes: bytes):
+        '''
+        Predict dog breed number
+        
+        input:
+            img_bytes (bytes): image in bytes format
+            
+        output:
+            breed_num (numpy.int64)
+        '''
         tensor = self.bytes_to_tensor(img_bytes)
         return self.dog_detector_from_tensor(tensor)
     
-    def dog_detector_from_tensor(self, tensor):
+    def dog_detector_from_tensor(self, tensor: np.array):
+        '''
+        Predict dog breed number
+        
+        input:
+            tensor (numpy.array): 4D tensor with shape (1, 224, 224, 3)
+            
+        output:
+            breed_num (numpy.int64)
+        '''
         prediction = self.ResNet50_predict_labels(tensor)
         return ((prediction <= 268) & (prediction >= 151)) 
     
-    def ResNet50_predict_labels(self, tensor):
+    def ResNet50_predict_labels(self, tensor: np.array):
+        '''
+        Uses ResNet50 model to predict image type
+        
+        input:
+            tensor (numpy.array): 4D tensor with shape (1, 224, 224, 3)
+            
+        output:
+            image type number
+        '''
         ResNet50_model = ResNet50(weights='imagenet')
         return np.argmax(ResNet50_model.predict(tensor))
     
-    def paths_to_tensor(self, img_paths):
+    def paths_to_tensor(self, img_paths: str):
+        '''
+        Convert images in img_paths to 4D tensors with shape (1, 224, 224, 3)
+        
+        input:
+            img_paths (str): path to folder containing images
+            
+        output:
+            tensors (List[numpy.array])
+        '''
         return [self.path_to_tensor(img_path) for img_path in tqdm(img_paths)]
 
-    def human_face_detector_from_path(self, img_path):
+    def human_face_detector_from_path(self, img_path: str):
+        '''
+        Uses haar cascade classifier to identify human faces
+        
+        input:
+            img_path (str): path to image
+            
+        output:
+            human_face (bool)
+        '''
         img = cv2.imread(img_path)
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         face_cascade = cv2.CascadeClassifier('cnn/haarcascades/haarcascade_frontalface_alt.xml')
         faces = face_cascade.detectMultiScale(gray)
         return len(faces) > 0
 
-    def human_face_detector(self, img_bytes):
+    def human_face_detector(self, img_bytes: bytes):
+        '''
+        Uses haar cascade classifier to identify human faces
+        
+        input:
+            img_bytes (bytes): image in bytes format
+            
+        output:
+            human_face (bool)
+        '''
         decoded = cv2.imdecode(np.frombuffer(img_bytes, np.uint8), -1)
         gray = cv2.cvtColor(decoded, cv2.COLOR_BGR2GRAY)
         face_cascade = cv2.CascadeClassifier('cnn/haarcascades/haarcascade_frontalface_alt.xml')
@@ -89,6 +223,12 @@ class DogBreeder:
         return len(faces) > 0
     
     def create_model(self):
+        '''
+        Creates, trains, tests and then saves the model.
+        Uses resnet features available in resnet.py if present, else generates them and save them.
+        '''
+        
+        
         # load train, test, and validation datasets
         try:
             with open('resnet.npy', 'rb') as f:
@@ -163,7 +303,16 @@ class DogBreeder:
         test_accuracy = 100*np.sum(np.array(resnet_predictions)==np.argmax(test_targets, axis=1))/len(resnet_predictions)
         print('Test accuracy: %.4f%%' % test_accuracy)
         
-    def load_dataset(self, path):
+    def load_dataset(self, path: str):
+        '''
+        Load image datasets from path
+        
+        input:
+            path (str): path to directory containing the images
+            
+        output:
+            dog_files (List[str]), dog_targets (List[str])
+        '''
         data = load_files(path)
         dog_files = [filename for filename in np.array(data['filenames']) if filename.endswith('.jpg')]
         dog_targets = np_utils.to_categorical(np.array(data['target']), 133)
