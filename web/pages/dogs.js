@@ -50,15 +50,5 @@ export default function Info() {
                 
             />
            </div>
-
-        
-        // <ul class="list-group w-fit mx-auto">
-
-        //     {   
-        //         dogs.map((dog)=> { return  <li class="list-group-item">{dog}</li> })
-        //     }
- 
-        // </ul>
-       
     )
 }
