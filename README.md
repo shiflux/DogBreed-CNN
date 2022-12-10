@@ -61,6 +61,14 @@ CNN models were the the part that struck me the most, and owning a dog, the choi
 
 We're using the CNN to classify the images of dogs. We're also taking advantage of transfer learning, in this case byt taking a pre-trained CNN model used in a similiar scenario (ResNet50). This helps us get better accuracy and less training time to get better accuracy.
 
+Below the distribution of the data.
+
+![Train data](train.png "Train data")
+
+![Valid data](valid.png "Valid data")
+
+![Test data](test.png "Test data")
+
 We're using accuracy as a metric to evaluate the models: it could seem to be a bad choice because the training data is unbalances, but in this case we have a high number of classes (133).
 
 The images can have different type of dimensions: to use the Resnet50 model, we need first to convert the image to (224, 224). Then we pass all the images to the ResNet50 model and extract the features.
