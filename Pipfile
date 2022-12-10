@@ -12,6 +12,8 @@ pillow = "*"
 tqdm = "*"
 fastapi = "*"
 python-multipart = "*"
+matplotlib = "*"
+seaborn = "*"
 
 [dev-packages]
 

@@ -11,6 +11,8 @@ from sklearn.datasets import load_files
 from PIL import Image
 from tqdm import tqdm
 import io
+import matplotlib.pyplot as plt
+import seaborn as sns
 from .consts import *
 
 class DogBreeder:
@@ -260,6 +262,10 @@ class DogBreeder:
                 np.save(f, valid_targets)
                 np.save(f, test_resnet)
                 np.save(f, test_targets)
+            
+        self.save_dataset_info(train_targets, 'train')
+        self.save_dataset_info(valid_targets, 'valid')
+        self.save_dataset_info(test_targets, 'test')
 
         resnet_model = Sequential()
         resnet_model.add(GlobalAveragePooling2D(input_shape=train_resnet.shape[1:]))
@@ -318,3 +324,10 @@ class DogBreeder:
         dog_targets = np_utils.to_categorical(np.array(data['target']), 133)
         return dog_files, dog_targets
 
+    def save_dataset_info(self, targets, save_name):
+        dogs, counts = np.unique(np.argmax(targets, axis=1), return_counts=True)
+            
+        plt.figure(figsize=(30,60))
+        sns.barplot(x='Count', y='Breed', data={'Breed': [self.get_dog_name(int(dog)) for dog in dogs], 'Count': counts}, palette="Blues_d")
+        plt.title('Number of images per breed in training set')
+        plt.savefig('{}.png'.format(save_name))
