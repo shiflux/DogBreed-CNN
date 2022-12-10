@@ -78,3 +78,5 @@ We then use these features as an input of our model. This makes it so the last c
 We keep the best model, and in our case it has an accuray of 81%.
 
 The results could be better improved by using a different pre-trained model.
+
+You can try the app [here](https://dogbreedfinder.app/)
