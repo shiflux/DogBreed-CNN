@@ -41,7 +41,7 @@ export default function Home() {
           <div className="d-flex justify-content-center align-items-center h-100">
             <div className="text-white">
               <h1 className="mb-3">Dog Breed Finder</h1>
-              <h4 className="mb-3">Upload an image of a dog and find its breed! <br/> You can also upload an image of a person and find the dog that looks the most like him/her.</h4>
+              <h4 className="mb-3">Upload an image of a dog and find its breed! <br/> You can also upload an image of a person and find the dog that looks the most like them.</h4>
               {/* <a className="btn btn-outline-light btn-lg" href="#!" role="button">Call to action</a> */}
             </div>
           </div>
