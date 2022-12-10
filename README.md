@@ -29,6 +29,8 @@
     cd web/
     npm install
     '
+### 4. Download image dataset (optional, only for generating model)
+[Dogs dataset](https://s3-us-west-1.amazonaws.com/udacity-aind/dog-project/dogImages.zip)
 
 ## Run instructions
 ### 1.1 Run api service
