@@ -4,7 +4,7 @@ export default function NavBar () {
     const router = useRouter()
     return (
         <nav className="navbar navbar-expand-sm navbar-dark d-flex justify-content-between px-5 bg-dark">
-            <a className="navbar-brand" href="#">
+            <a className="navbar-brand" href="/">
                 <img src='/logo.png' width={50} /> 
                 <span className='mx-3'>Dog Breed Finder</span>
                 
