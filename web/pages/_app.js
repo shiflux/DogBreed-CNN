@@ -14,7 +14,7 @@ export default function MyApp ({ Component, pageProps }) {
                     crossOrigin="anonymous"
                 />
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
-                <title>Create Next App</title>
+                <title>Dog Breed Finder</title>
                 <link rel="icon" href="/favicon.ico" />
 
                 </Head>
