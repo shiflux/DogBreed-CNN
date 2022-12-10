@@ -1,0 +1,16 @@
+@media screen and (max-width: 400px) {
+    .custom {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .customInput {
+        margin: 30px auto;
+        width: 210px;
+    }
+
+    .customButton {
+        margin: 0 auto;
+    }
+}
+

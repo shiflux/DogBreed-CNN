@@ -34,26 +34,23 @@ export default function Home() {
 
   return (
     <div>
-
-      
-      <div className="p-5 mt-5 container text-center bg-image rounded-3" style={{backgroundImage: "url('/hero.jpg')",height: '300px', backgroundSize: 'cover', backgroundRepeat:'no-repeat', backgroundPosition:'center'}} >
-        <div className="mask p-4" style={{backgroundColor: 'rgba(0, 0, 0, 0.4)'}}>
+      <div className="md-p-5 container text-center bg-image rounded-3 d-flex justify-content-center align-items-center" style={{backgroundImage: "url('/hero.jpg')",height: '300px', backgroundSize: 'cover', backgroundRepeat:'no-repeat', backgroundPosition:'center'}} >
+        <div className="mask p-3 sm-p-4 md-p-5" style={{backgroundColor: 'rgba(0, 0, 0, 0.4)'}}>
           <div className="d-flex justify-content-center align-items-center h-100">
             <div className="text-white">
               <h1 className="mb-3">Dog Breed Finder</h1>
               <h4 className="mb-3">Upload an image of a dog and find its breed! <br/> You can also upload an image of a person and find the dog that looks the most like them.</h4>
-              {/* <a className="btn btn-outline-light btn-lg" href="#!" role="button">Call to action</a> */}
             </div>
           </div>
         </div>
       </div>
 
-      <div className='p-5 d-flex justify-content-center'>
-        <input ref={inputRef} disabled={requestInProgress} type='file' onChange={(event) => {
+      <div className='p-5 d-flex justify-content-center custom'>
+        <input className='customInput' ref={inputRef} disabled={requestInProgress} type='file' onChange={(event) => {
           setFileImage(event.target.files[0]);
           setResponseData(null);
         }} />
-        <button disabled={fileImage==null} onClick={() => {handleSubmission(fileImage)}} className="btn btn-dark" style={{width: 'fit-content'}}>
+        <button disabled={fileImage==null} onClick={() => {handleSubmission(fileImage)}} className="btn btn-dark customButton" style={{width: 'fit-content'}}>
         Identify
         </button>
       </div>
