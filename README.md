@@ -75,7 +75,31 @@ We're using accuracy as a metric to evaluate the models: it could seem to be a b
 
 The images can have different type of dimensions: to use the Resnet50 model, we need first to convert the image to (224, 224). Then we pass all the images to the ResNet50 model and extract the features.
 We then use these features as an input of our model. This makes it so the last convolutional layer of the ResNet50 is fed to our mode.
-We keep the best model, and in our case it has an accuray of 81%.
+We keep the best model, and in our case it has an accuray of 82.17%.
+
+_________________________________________________________________
+## Layer (type)                Output Shape              Param #
+_________________________________________________________________
+ global_average_pooling2d (G  (None, 2048)             0
+ lobalAveragePooling2D)
+
+ dense (Dense)               (None, 532)               1090068
+
+ dropout (Dropout)           (None, 532)               0
+
+ dense_1 (Dense)             (None, 266)               141778
+
+ dropout_1 (Dropout)         (None, 266)               0
+
+ dense_2 (Dense)             (None, 133)               35511
+
+_________________________________________________________________
+
+Total params: 1,267,357
+Trainable params: 1,267,357
+Non-trainable params: 0
+_________________________________________________________________
+
 
 The results could be better improved by using a different pre-trained model.
 
