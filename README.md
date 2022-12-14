@@ -75,7 +75,7 @@ We're using accuracy as a metric to evaluate the models: it could seem to be a b
 
 The images can have different type of dimensions: to use the Resnet50 model, we need first to convert the image to (224, 224). Then we pass all the images to the ResNet50 model and extract the features.
 We then use these features as an input of our model. This makes it so the last convolutional layer of the ResNet50 is fed to our mode.
-We keep the best model, and in our case it has an accuray of 82.17%.
+We keep the best model, and in our case it has an accuray of 80.5%.
 
 _________________________________________________________________
 ## Layer (type)                Output Shape              Param #

@@ -188,7 +188,7 @@ class DogBreeder:
             img_paths (str): path to folder containing images
             
         output:
-            tensors (List[numpy.array])
+            tensors (list[numpy.array])
         '''
         return [self.path_to_tensor(img_path) for img_path in tqdm(img_paths)]
 
@@ -227,56 +227,21 @@ class DogBreeder:
     def create_model(self):
         '''
         Creates, trains, tests and then saves the model.
-        Uses resnet features available in resnet.py if present, else generates them and save them.
+        Uses resnet features available in resnet.npy if present, else generates them and save them.
         '''
         
         
         # load train, test, and validation datasets
-        try:
-            with open('resnet.npy', 'rb') as f:
-                train_resnet = np.load(f)
-                train_targets = np.load(f)
-                valid_resnet = np.load(f)
-                valid_targets = np.load(f) 
-                test_resnet = np.load(f)
-                test_targets = np.load(f) 
-                
-        except:
-            print('resent.py file not found, generating features')
-            train_files, train_targets = self.load_dataset('cnn/dogImages/train')
-            valid_files, valid_targets = self.load_dataset('cnn/dogImages/valid')
-            test_files, test_targets = self.load_dataset('cnn/dogImages/test')
+        self.load_or_create_datasets()
             
-            train_tensors = self.paths_to_tensor(train_files)
-            valid_tensors = self.paths_to_tensor(valid_files)
-            test_tensors = self.paths_to_tensor(test_files)
-            
-            train_resnet = np.vstack([self.extract_Resnet50(tensor) for tensor in train_tensors])
-            valid_resnet = np.vstack([self.extract_Resnet50(tensor) for tensor in valid_tensors])
-            test_resnet = np.vstack([self.extract_Resnet50(tensor) for tensor in test_tensors])
+        self.print_dataset_info(self.train_targets, 'train')
+        self.print_dataset_info(self.valid_targets, 'valid')
+        self.print_dataset_info(self.test_targets, 'test')
 
-            with open('resnet.npy', 'wb') as f:
-                np.save(f, train_resnet)
-                np.save(f, train_targets)
-                np.save(f, valid_resnet)
-                np.save(f, valid_targets)
-                np.save(f, test_resnet)
-                np.save(f, test_targets)
-            
-        self.save_dataset_info(train_targets, 'train')
-        self.save_dataset_info(valid_targets, 'valid')
-        self.save_dataset_info(test_targets, 'test')
+        self.init_custom_model()
 
-        resnet_model = Sequential()
-        resnet_model.add(GlobalAveragePooling2D(input_shape=train_resnet.shape[1:]))
-        resnet_model.add(Dense(532, activation='relu'))
-        resnet_model.add(Dropout(0.3))
-        resnet_model.add(Dense(266, activation='relu'))
-        resnet_model.add(Dropout(0.1))
-        resnet_model.add(Dense(133, activation='softmax'))
-
-        resnet_model.summary()
-        resnet_model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
+        self.dog_model.summary()
+        self.dog_model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
         checkpointer = ModelCheckpoint(filepath=MODEL_PATH, verbose=1, save_best_only=True, save_weights_only=False)
         
         datagen_resnet_train = ImageDataGenerator(
@@ -291,23 +256,68 @@ class DogBreeder:
             horizontal_flip=True) # randomly flip images horizontally
 
         # fit augmented image generator train_resnet data
-        datagen_resnet_train.fit(train_resnet)
-        datagen_resnet_valid.fit(valid_resnet)
+        datagen_resnet_train.fit(self.train_resnet)
+        datagen_resnet_valid.fit(self.valid_resnet)
 
         epochs = 200
         batch_size = 20
-        resnet_model.fit_generator(datagen_resnet_train.flow(train_resnet, train_targets, batch_size=batch_size),
-                            steps_per_epoch=train_resnet.shape[0] // batch_size,
+        self.dog_model.fit_generator(datagen_resnet_train.flow(self.train_resnet, self.train_targets, batch_size=batch_size),
+                            steps_per_epoch=self.train_resnet.shape[0] // batch_size,
                             epochs=epochs, verbose=1, callbacks=[checkpointer],
-                            validation_data=datagen_resnet_valid.flow(valid_resnet, valid_targets, batch_size=batch_size),
-                            validation_steps=valid_resnet.shape[0] // batch_size)
+                            validation_data=datagen_resnet_valid.flow(self.valid_resnet, self.valid_targets, batch_size=batch_size),
+                            validation_steps=self.valid_resnet.shape[0] // batch_size)
         
-        resnet_predictions = [np.argmax(resnet_model.predict(np.expand_dims(feature, axis=0))) for feature in test_resnet]
-
-        resnet_model.load_weights(MODEL_PATH) 
+        self.dog_model.load_weights(MODEL_PATH) 
+        
         # report test accuracy
-        test_accuracy = 100*np.sum(np.array(resnet_predictions)==np.argmax(test_targets, axis=1))/len(resnet_predictions)
+        resnet_predictions = [np.argmax(self.dog_model.predict(np.expand_dims(feature, axis=0))) for feature in self.test_resnet]
+        test_accuracy = 100*np.sum(np.array(resnet_predictions)==np.argmax(self.test_targets, axis=1))/len(resnet_predictions)
         print('Test accuracy: %.4f%%' % test_accuracy)
+        
+    def load_or_create_datasets(self):
+        '''
+        Loads datasets from resnet.npy if available, else creates them from the images and then saves them to resnet.npy.
+        '''
+        try:
+            with open('resnet.npy', 'rb') as f:
+                self.train_resnet = np.load(f)
+                self.train_targets = np.load(f)
+                self.valid_resnet = np.load(f)
+                self.valid_targets = np.load(f) 
+                self.test_resnet = np.load(f)
+                self.test_targets = np.load(f) 
+                
+        except:
+            print('resnet.npy file not found, generating features')
+            self.train_files, self.train_targets = self.load_dataset('cnn/dogImages/train')
+            self.valid_files, self.valid_targets = self.load_dataset('cnn/dogImages/valid')
+            self.test_files, self.test_targets = self.load_dataset('cnn/dogImages/test')
+            
+            self.train_tensors = self.paths_to_tensor(self.train_files)
+            self.valid_tensors = self.paths_to_tensor(self.valid_files)
+            self.test_tensors = self.paths_to_tensor(self.test_files)
+            
+            self.train_resnet = np.vstack([self.extract_Resnet50(tensor) for tensor in self.train_tensors])
+            self.valid_resnet = np.vstack([self.extract_Resnet50(tensor) for tensor in self.valid_tensors])
+            self.test_resnet = np.vstack([self.extract_Resnet50(tensor) for tensor in self.test_tensors])
+
+            with open('resnet.npy', 'wb') as f:
+                np.save(f, self.train_resnet)
+                np.save(f, self.train_targets)
+                np.save(f, self.valid_resnet)
+                np.save(f, self.valid_targets)
+                np.save(f, self.test_resnet)
+                np.save(f, self.test_targets)
+                
+    def init_custom_model(self):
+        self.dog_model = Sequential()
+        self.dog_model.add(GlobalAveragePooling2D(input_shape=self.train_resnet.shape[1:]))
+        self.dog_model.add(Dense(532, activation='relu'))
+        self.dog_model.add(Dropout(0.3))
+        self.dog_model.add(Dense(266, activation='relu'))
+        self.dog_model.add(Dropout(0.1))
+        self.dog_model.add(Dense(133, activation='softmax'))
+        
         
     def load_dataset(self, path: str):
         '''
@@ -317,17 +327,26 @@ class DogBreeder:
             path (str): path to directory containing the images
             
         output:
-            dog_files (List[str]), dog_targets (List[str])
+            dog_files (list[str]), dog_targets (list[str])
         '''
         data = load_files(path)
         dog_files = [filename for filename in np.array(data['filenames']) if filename.endswith('.jpg')]
         dog_targets = np_utils.to_categorical(np.array(data['target']), 133)
         return dog_files, dog_targets
 
-    def save_dataset_info(self, targets, save_name):
+    def print_dataset_info(self, targets: list[str], save_name: str=None):
+        '''
+        Print or save dataset plot
+        
+        input:
+            targets (list[str]): image targets
+            save_name (str): optional file name
+        '''
         dogs, counts = np.unique(np.argmax(targets, axis=1), return_counts=True)
             
         plt.figure(figsize=(30,60))
         sns.barplot(x='Count', y='Breed', data={'Breed': [self.get_dog_name(int(dog)) for dog in dogs], 'Count': counts}, palette="Blues_d")
         plt.title('Number of images per breed in training set')
-        plt.savefig('{}.png'.format(save_name))
+        
+        if save_name:
+            plt.savefig('{}.png'.format(save_name))
